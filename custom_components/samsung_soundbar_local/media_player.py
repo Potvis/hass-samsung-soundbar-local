@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 
 from homeassistant.components.media_player import (
+    MediaPlayerDeviceClass,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
 )
@@ -66,6 +67,7 @@ class SoundbarLocalEntity(CoordinatorEntity, MediaPlayerEntity):
     _attr_supported_features = _SUPPORTED
     _attr_source_list = _SOURCES
     _attr_sound_mode_list = _SOUND_MODES
+    _attr_device_class = MediaPlayerDeviceClass.SPEAKER
 
     def __init__(self, coordinator, soundbar: AsyncSoundbar, entry: ConfigEntry) -> None:
         super().__init__(coordinator)
