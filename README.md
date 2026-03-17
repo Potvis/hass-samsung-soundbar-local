@@ -38,6 +38,7 @@ The entity is exposed as `media_player.soundbar_<ipaddr>` and works with dashboa
 
 ## Supported models
 
+* HW-Q990D  – HW-Q930F
 * HW-Q990D  – HW-Q800D  – HW-QS730D
 * HW-S800D  – HW-S801D  – HW-S700D  – HW-S60D  – HW-S61D  – HW-LS60D
 
