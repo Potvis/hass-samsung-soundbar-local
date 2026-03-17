@@ -15,7 +15,15 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.config_entries import ConfigEntry
 
-from .const import DOMAIN
+from .const import (
+    ALL_SOUND_MODES,
+    ALL_SOURCES,
+    CONF_SOUND_MODE_NAMES,
+    CONF_SOURCE_NAMES,
+    DEFAULT_SOUND_MODE_NAMES,
+    DEFAULT_SOURCE_NAMES,
+    DOMAIN,
+)
 from .soundbar import AsyncSoundbar
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,26 +38,19 @@ _SUPPORTED: MediaPlayerEntityFeature = (
     | MediaPlayerEntityFeature.SELECT_SOUND_MODE
 )
 
-_SOURCES = [
-    "HDMI_IN1",
-    "HDMI_IN2",
-    "E_ARC",
-    "ARC",
-    "D_IN",
-    "BT",
-    "WIFI_IDLE",
-]
 
-_SOUND_MODES = [
-    "STANDARD",
-    "SURROUND",
-    "GAME",
-    "MOVIE",
-    "MUSIC",
-    "CLEARVOICE",
-    "DTS_VIRTUAL_X",
-    "ADAPTIVE",
-]
+def _build_mapping(
+    api_names: list[str],
+    defaults: dict[str, str],
+    overrides: dict[str, str],
+) -> dict[str, str]:
+    """Build {api_name: display_name} mapping, dropping empty display names."""
+    mapping: dict[str, str] = {}
+    for api_name in api_names:
+        display = overrides.get(api_name, defaults.get(api_name, api_name))
+        if display:  # empty string = hidden
+            mapping[api_name] = display
+    return mapping
 
 
 async def async_setup_entry(hass, entry: ConfigEntry, async_add_entities):
@@ -65,8 +66,6 @@ class SoundbarLocalEntity(CoordinatorEntity, MediaPlayerEntity):
     """Representation of the soundbar as a Media Player entity."""
 
     _attr_supported_features = _SUPPORTED
-    _attr_source_list = _SOURCES
-    _attr_sound_mode_list = _SOUND_MODES
     _attr_device_class = MediaPlayerDeviceClass.SPEAKER
 
     def __init__(self, coordinator, soundbar: AsyncSoundbar, entry: ConfigEntry) -> None:
@@ -83,6 +82,30 @@ class SoundbarLocalEntity(CoordinatorEntity, MediaPlayerEntity):
             model="Soundbar",
             name=self._attr_name,
         )
+
+        self._refresh_mappings()
+
+    def _refresh_mappings(self) -> None:
+        """Rebuild display-name mappings from current options."""
+        opts = self._entry.options
+
+        self._source_map = _build_mapping(
+            ALL_SOURCES,
+            DEFAULT_SOURCE_NAMES,
+            opts.get(CONF_SOURCE_NAMES, {}),
+        )
+        self._sound_mode_map = _build_mapping(
+            ALL_SOUND_MODES,
+            DEFAULT_SOUND_MODE_NAMES,
+            opts.get(CONF_SOUND_MODE_NAMES, {}),
+        )
+
+        # Reverse maps: display_name -> api_name
+        self._source_reverse = {v: k for k, v in self._source_map.items()}
+        self._sound_mode_reverse = {v: k for k, v in self._sound_mode_map.items()}
+
+        self._attr_source_list = list(self._source_map.values())
+        self._attr_sound_mode_list = list(self._sound_mode_map.values())
 
     # ---------- control ----------
     async def async_turn_on(self) -> None:
@@ -111,11 +134,13 @@ class SoundbarLocalEntity(CoordinatorEntity, MediaPlayerEntity):
             await self.coordinator.async_request_refresh()
 
     async def async_select_source(self, source: str) -> None:
-        await self._soundbar.select_input(source)
+        api_name = self._source_reverse.get(source, source)
+        await self._soundbar.select_input(api_name)
         await self.coordinator.async_request_refresh()
 
     async def async_select_sound_mode(self, sound_mode: str) -> None:
-        await self._soundbar.set_sound_mode(sound_mode)
+        api_name = self._sound_mode_reverse.get(sound_mode, sound_mode)
+        await self._soundbar.set_sound_mode(api_name)
         await self.coordinator.async_request_refresh()
 
     # ---------- properties ----------
@@ -134,13 +159,16 @@ class SoundbarLocalEntity(CoordinatorEntity, MediaPlayerEntity):
 
     @property
     def source(self):
-        return self.coordinator.data.get("input")
+        api_val = self.coordinator.data.get("input")
+        return self._source_map.get(api_val, api_val)
 
     @property
     def sound_mode(self):
-        return self.coordinator.data.get("sound_mode")
+        api_val = self.coordinator.data.get("sound_mode")
+        return self._sound_mode_map.get(api_val, api_val)
 
-    # ---------- coordinator update ----------
+    # ---------- coordinator / options update ----------
     @callback
     def _handle_coordinator_update(self) -> None:
+        self._refresh_mappings()
         self.async_write_ha_state()

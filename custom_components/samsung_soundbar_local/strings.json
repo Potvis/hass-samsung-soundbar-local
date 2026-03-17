@@ -1,0 +1,53 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Samsung Soundbar Local",
+        "description": "Set up your Samsung soundbar for local control.",
+        "data": {
+          "host": "Host (IP address)",
+          "verify_ssl": "Verify SSL certificate"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Soundbar Options",
+        "description": "Choose what to configure.",
+        "menu_options": {
+          "sources": "Input sources",
+          "sound_modes": "Sound modes"
+        }
+      },
+      "sources": {
+        "title": "Input Sources",
+        "description": "Enter a display name for each input source. Leave blank to hide the source from the UI.",
+        "data": {
+          "HDMI_IN1": "HDMI 1",
+          "HDMI_IN2": "HDMI 2",
+          "E_ARC": "eARC",
+          "ARC": "ARC",
+          "D_IN": "Digital In",
+          "BT": "Bluetooth",
+          "WIFI_IDLE": "Wi-Fi"
+        }
+      },
+      "sound_modes": {
+        "title": "Sound Modes",
+        "description": "Enter a display name for each sound mode. Leave blank to hide the mode from the UI.",
+        "data": {
+          "STANDARD": "Standard",
+          "SURROUND": "Surround",
+          "GAME": "Game",
+          "MOVIE": "Movie",
+          "MUSIC": "Music",
+          "CLEARVOICE": "Clear Voice",
+          "DTS_VIRTUAL_X": "DTS Virtual X",
+          "ADAPTIVE": "Adaptive Sound"
+        }
+      }
+    }
+  }
+}
