@@ -14,38 +14,40 @@
   "options": {
     "step": {
       "init": {
-        "title": "Soundbar Options",
-        "description": "Choose what to configure.",
+        "title": "Soundbar Settings",
+        "description": "Choose a category to configure.",
         "menu_options": {
-          "sources": "Input sources",
-          "sound_modes": "Sound modes"
+          "sources": "Configure input sources (rename, hide, or reorder)",
+          "sound_modes": "Configure sound modes (rename, hide, or reorder)"
         }
       },
       "sources": {
         "title": "Input Sources",
-        "description": "Enter a display name for each input source. Leave blank to hide the source from the UI.",
+        "description": "Set a display name for each input. Clear a field to hide that source.\nUse the order field to control the order (comma-separated API names). Remove an entry from the order to hide it.",
         "data": {
-          "HDMI_IN1": "HDMI 1",
-          "HDMI_IN2": "HDMI 2",
-          "E_ARC": "eARC",
-          "ARC": "ARC",
-          "D_IN": "Digital In",
-          "BT": "Bluetooth",
-          "WIFI_IDLE": "Wi-Fi"
+          "source_order": "Display order (comma-separated API names)",
+          "HDMI_IN1": "HDMI_IN1 display name",
+          "HDMI_IN2": "HDMI_IN2 display name",
+          "E_ARC": "E_ARC display name",
+          "ARC": "ARC display name",
+          "D_IN": "D_IN display name",
+          "BT": "BT display name",
+          "WIFI_IDLE": "WIFI_IDLE display name"
         }
       },
       "sound_modes": {
         "title": "Sound Modes",
-        "description": "Enter a display name for each sound mode. Leave blank to hide the mode from the UI.",
+        "description": "Set a display name for each sound mode. Clear a field to hide that mode.\nUse the order field to control the order (comma-separated API names). Remove an entry from the order to hide it.",
         "data": {
-          "STANDARD": "Standard",
-          "SURROUND": "Surround",
-          "GAME": "Game",
-          "MOVIE": "Movie",
-          "MUSIC": "Music",
-          "CLEARVOICE": "Clear Voice",
-          "DTS_VIRTUAL_X": "DTS Virtual X",
-          "ADAPTIVE": "Adaptive Sound"
+          "sound_mode_order": "Display order (comma-separated API names)",
+          "STANDARD": "STANDARD display name",
+          "SURROUND": "SURROUND display name",
+          "GAME": "GAME display name",
+          "MOVIE": "MOVIE display name",
+          "MUSIC": "MUSIC display name",
+          "CLEARVOICE": "CLEARVOICE display name",
+          "DTS_VIRTUAL_X": "DTS_VIRTUAL_X display name",
+          "ADAPTIVE": "ADAPTIVE display name"
         }
       }
     }
