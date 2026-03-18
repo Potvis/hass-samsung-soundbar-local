@@ -7,6 +7,8 @@ DEFAULT_POLL_INTERVAL = 10  # seconds
 CONF_VERIFY_SSL = "verify_ssl"
 CONF_SOURCE_NAMES = "source_names"
 CONF_SOUND_MODE_NAMES = "sound_mode_names"
+CONF_SOURCE_ORDER = "source_order"
+CONF_SOUND_MODE_ORDER = "sound_mode_order"
 
 # All possible API source identifiers
 ALL_SOURCES = [

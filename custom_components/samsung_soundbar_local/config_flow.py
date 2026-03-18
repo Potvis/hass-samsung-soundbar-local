@@ -11,7 +11,9 @@ from .const import (
     ALL_SOUND_MODES,
     ALL_SOURCES,
     CONF_SOUND_MODE_NAMES,
+    CONF_SOUND_MODE_ORDER,
     CONF_SOURCE_NAMES,
+    CONF_SOURCE_ORDER,
     CONF_VERIFY_SSL,
     DEFAULT_SOUND_MODE_NAMES,
     DEFAULT_SOURCE_NAMES,
@@ -59,52 +61,92 @@ class SoundbarLocalOptionsFlow(config_entries.OptionsFlow):
             menu_options=["sources", "sound_modes"],
         )
 
+    # ---- sources ----
+
     async def async_step_sources(self, user_input: dict | None = None) -> FlowResult:
-        """Configure source display names."""
-        current = self._config_entry.options.get(CONF_SOURCE_NAMES, {})
+        """Configure source display names and order."""
+        current_names = self._config_entry.options.get(CONF_SOURCE_NAMES, {})
+        current_order = self._config_entry.options.get(CONF_SOURCE_ORDER, "")
 
         if user_input is not None:
             new_opts = dict(self._config_entry.options)
             new_opts[CONF_SOURCE_NAMES] = {
-                api_name: user_input.get(api_name, "")
+                api_name: user_input.get(api_name, "").strip()
                 for api_name in ALL_SOURCES
             }
+            new_opts[CONF_SOURCE_ORDER] = user_input.get(CONF_SOURCE_ORDER, "").strip()
             return self.async_create_entry(title="", data=new_opts)
 
+        # Build schema with suggested_value so clearing a field actually blanks it
         schema_fields: dict = {}
+
+        # Order field first
+        default_order = current_order or ", ".join(ALL_SOURCES)
+        schema_fields[
+            vol.Optional(
+                CONF_SOURCE_ORDER,
+                description={"suggested_value": default_order},
+            )
+        ] = str
+
+        # Individual name fields
         for api_name in ALL_SOURCES:
-            default = current.get(api_name, DEFAULT_SOURCE_NAMES.get(api_name, api_name))
-            schema_fields[vol.Optional(api_name, default=default)] = str
+            current = current_names.get(
+                api_name, DEFAULT_SOURCE_NAMES.get(api_name, "")
+            )
+            schema_fields[
+                vol.Optional(
+                    api_name,
+                    description={"suggested_value": current},
+                )
+            ] = str
 
         return self.async_show_form(
             step_id="sources",
             data_schema=vol.Schema(schema_fields),
-            description_placeholders={
-                "instructions": "Enter a display name for each input source. Leave blank to hide the source from the UI."
-            },
         )
 
+    # ---- sound modes ----
+
     async def async_step_sound_modes(self, user_input: dict | None = None) -> FlowResult:
-        """Configure sound mode display names."""
-        current = self._config_entry.options.get(CONF_SOUND_MODE_NAMES, {})
+        """Configure sound mode display names and order."""
+        current_names = self._config_entry.options.get(CONF_SOUND_MODE_NAMES, {})
+        current_order = self._config_entry.options.get(CONF_SOUND_MODE_ORDER, "")
 
         if user_input is not None:
             new_opts = dict(self._config_entry.options)
             new_opts[CONF_SOUND_MODE_NAMES] = {
-                api_name: user_input.get(api_name, "")
+                api_name: user_input.get(api_name, "").strip()
                 for api_name in ALL_SOUND_MODES
             }
+            new_opts[CONF_SOUND_MODE_ORDER] = user_input.get(
+                CONF_SOUND_MODE_ORDER, ""
+            ).strip()
             return self.async_create_entry(title="", data=new_opts)
 
         schema_fields: dict = {}
+
+        # Order field first
+        default_order = current_order or ", ".join(ALL_SOUND_MODES)
+        schema_fields[
+            vol.Optional(
+                CONF_SOUND_MODE_ORDER,
+                description={"suggested_value": default_order},
+            )
+        ] = str
+
         for api_name in ALL_SOUND_MODES:
-            default = current.get(api_name, DEFAULT_SOUND_MODE_NAMES.get(api_name, api_name))
-            schema_fields[vol.Optional(api_name, default=default)] = str
+            current = current_names.get(
+                api_name, DEFAULT_SOUND_MODE_NAMES.get(api_name, "")
+            )
+            schema_fields[
+                vol.Optional(
+                    api_name,
+                    description={"suggested_value": current},
+                )
+            ] = str
 
         return self.async_show_form(
             step_id="sound_modes",
             data_schema=vol.Schema(schema_fields),
-            description_placeholders={
-                "instructions": "Enter a display name for each sound mode. Leave blank to hide the mode from the UI."
-            },
         )

@@ -19,7 +19,9 @@ from .const import (
     ALL_SOUND_MODES,
     ALL_SOURCES,
     CONF_SOUND_MODE_NAMES,
+    CONF_SOUND_MODE_ORDER,
     CONF_SOURCE_NAMES,
+    CONF_SOURCE_ORDER,
     DEFAULT_SOUND_MODE_NAMES,
     DEFAULT_SOURCE_NAMES,
     DOMAIN,
@@ -39,14 +41,27 @@ _SUPPORTED: MediaPlayerEntityFeature = (
 )
 
 
+def _parse_order(order_str: str, all_names: list[str]) -> list[str]:
+    """Parse a comma-separated order string into a list of valid API names."""
+    if not order_str or not order_str.strip():
+        return list(all_names)
+    valid = set(all_names)
+    return [n.strip() for n in order_str.split(",") if n.strip() in valid]
+
+
 def _build_mapping(
     api_names: list[str],
     defaults: dict[str, str],
     overrides: dict[str, str],
+    order: list[str],
 ) -> dict[str, str]:
-    """Build {api_name: display_name} mapping, dropping empty display names."""
+    """Build ordered {api_name: display_name} mapping, dropping empty display names."""
+    # Only include sources that appear in the order list
+    ordered = order if order else api_names
     mapping: dict[str, str] = {}
-    for api_name in api_names:
+    for api_name in ordered:
+        if api_name not in defaults and api_name not in overrides:
+            continue
         display = overrides.get(api_name, defaults.get(api_name, api_name))
         if display:  # empty string = hidden
             mapping[api_name] = display
@@ -89,15 +104,24 @@ class SoundbarLocalEntity(CoordinatorEntity, MediaPlayerEntity):
         """Rebuild display-name mappings from current options."""
         opts = self._entry.options
 
+        source_order = _parse_order(
+            opts.get(CONF_SOURCE_ORDER, ""), ALL_SOURCES
+        )
+        sound_mode_order = _parse_order(
+            opts.get(CONF_SOUND_MODE_ORDER, ""), ALL_SOUND_MODES
+        )
+
         self._source_map = _build_mapping(
             ALL_SOURCES,
             DEFAULT_SOURCE_NAMES,
             opts.get(CONF_SOURCE_NAMES, {}),
+            source_order,
         )
         self._sound_mode_map = _build_mapping(
             ALL_SOUND_MODES,
             DEFAULT_SOUND_MODE_NAMES,
             opts.get(CONF_SOUND_MODE_NAMES, {}),
+            sound_mode_order,
         )
 
         # Reverse maps: display_name -> api_name

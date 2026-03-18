@@ -1,4 +1,4 @@
-"""Number entity for Samsung Soundbar Local – Subwoofer level."""
+"""Number entity for Samsung Soundbar Local - Subwoofer level."""
 
 from __future__ import annotations
 
